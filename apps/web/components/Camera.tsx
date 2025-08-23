@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { ImageCard, ImageCardSkeleton, TImage } from "./ImageCard"
 
 type BulkResponse = {
-    images?: TImage[]
+    imagesData?: TImage[]   // ✅ updated to match backend
 }
 
 export function Camera() {
@@ -23,7 +23,7 @@ export function Camera() {
                 }
             });
             console.log("API response", response.data);
-            setImages(response.data?.images || []);   // ✅ safe fallback
+            setImages(response.data?.imagesData || []);   // ✅ use imagesData
         } catch (err) {
             console.error("Error fetching images:", err);
             setImages([]); // fallback to empty
