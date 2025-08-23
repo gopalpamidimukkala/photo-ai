@@ -1,0 +1,21 @@
+{
+  "name": "@repo/common",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./types": "./types.ts",
+    "./inferred": "./inferred-types.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "z": "^1.0.9",
+    "zod": "^4.0.17"
+  }
+  
+}
