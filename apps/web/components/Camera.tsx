@@ -12,7 +12,7 @@ export function Camera() {
 
     useEffect(() => {
         (async() => {
-            const token = getToken()
+            const token = await getToken()
             const response = await axios.get(`${BACKEND_URL}/image/bulk`, {
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -28,7 +28,7 @@ export function Camera() {
         (async () => {
             if (images.find(x => x.status !== "Generated")) {
                 await new Promise((r) => setTimeout(r, 5000));
-                const token = getToken();
+                const token = await getToken();
                 const response = await axios.get(`${BACKEND_URL}/image/bulk`, {
                     headers: {
                         "Authorization": `Bearer ${token}`

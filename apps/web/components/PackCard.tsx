@@ -16,7 +16,7 @@ export function PackCard (props: TPack & { selectedModelId: string }) {
     return (
         <div className="rounded-xl hover:border-red-300 border-2 p-2 cursor-pointer" onClick={async () => {
             toast("Pack generation started successfully")
-            const token = getToken()
+            const token = await getToken()
             const response = await axios.post(`${BACKEND_URL}/pack/generate`, {
                 packId: props.id,
                 modelId: props.selectedModelId

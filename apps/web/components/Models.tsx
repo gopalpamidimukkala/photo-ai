@@ -22,7 +22,7 @@ export function SelectModel({selectedModel, setSelectedModel}: {
 
     useEffect(() => {
         (async() => {
-            const token = getToken()
+            const token = await getToken()
             const response = await axios.get(`${BACKEND_URL}/models`, {
                 headers: {
                     "Authorization": `Bearer ${token}`
