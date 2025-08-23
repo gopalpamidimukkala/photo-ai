@@ -16,7 +16,12 @@ const falAiModel = new FalAIModel();
 
 const app = express();
 
-app.use(cors())
+app.use(cors({
+    origin: ["https://photo.pgopal.in", "http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
+  }));
 app.use(express.json());
 
 app.get('/pre-signed-url', (req, res) => {
