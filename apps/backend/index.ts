@@ -272,18 +272,16 @@ app.post('/fal-ai/webhook/image', async (req, res) => {
         const requestId = req.body.request_id;
 
         if (req.body.status === "ERROR") {
-            res.status(411).json({})
-
-            prismaClient.outputImages.updateMany({
-                where: {
-                    falAiRequestId: requestId
-                },
-                data:{
-                    status: "Failed",
-                    imageUrl: req.body.payload.images[0].url
-                }
-            })
-        }
+            await prismaClient.outputImages.updateMany({
+              where: { falAiRequestId: requestId },
+              data: {
+                status: "Failed",
+                imageUrl: "https://img.freepik.com/free-psd/cross-mark-isolated_23-2151478803.jpg?semt=ais_hybrid&w=740&q=80" // no image if failed
+              },
+            });
+      
+            return res.status(200).json({ message: "Webhook Received: ERROR" });
+          }
     
         await prismaClient.outputImages.updateMany({
             where: {
@@ -291,14 +289,15 @@ app.post('/fal-ai/webhook/image', async (req, res) => {
             },
             data: {
                 status: "Generated",
-                imageUrl: req.body.payload.images[0].url
+                imageUrl: req.body.payload?.images[0]?.url
             }
         })
         res.json({
-            message: "Webhook Received"
+            message: "Webhook Received : SUCCESS"
         })
     } catch (error) {
-        console.log("Error in the Server")
+        console.error("Error in the webhook handler:", error);
+        res.status(500).json({ error: "Failed to handle webhook" });
     }
 
 })
