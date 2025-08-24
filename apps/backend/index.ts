@@ -129,7 +129,7 @@ app.post('/ai/generate/', authMiddleware, async (req, res) => {
 app.post('/pack/generate/', authMiddleware, async (req, res) => {
     try {
         const parsedBody = GenerateImagesFromPack.safeParse(req.body);
-        console.log(parsedBody);
+       
 
         if (!parsedBody.success ) {
             res.status(411).json({
@@ -142,14 +142,14 @@ app.post('/pack/generate/', authMiddleware, async (req, res) => {
                 packId: parsedBody.data.packId 
             }
         })
-        console.log("prompts",prompts)
+        
 
         const model = await prismaClient.model.findFirst({
             where: {
                 id : parsedBody.data.modelId
             }
         })
-        console.log("model", model)
+        
         if (!model) {
             res.status(411).json({
                 message: "Model Not Found"
@@ -162,16 +162,18 @@ app.post('/pack/generate/', authMiddleware, async (req, res) => {
                 falAiModel.generateImage(prompt.prompt, model.tensorPath! )
             )
         );
-        console.log(requestIds);
+        // Create pending records in DB
         const images = await prismaClient.outputImages.createManyAndReturn({
             data: prompts.map((prompt, index) => ({
                 prompt: prompt.prompt,
                 userId: req.userId!,
                 modelId: parsedBody.data.modelId,
-                imageUrl: "",
-                falAiModel: requestIds[index]?.request_id,
+                imageUrl: "", // will be filled by webhook
+                falAiRequestId: requestIds[index]?.request_id,
+                status: "Pending"
             }))
-        })
+        });
+
 
         res.json({
             images: images.map((image) => image.id)
@@ -269,32 +271,21 @@ app.post('/fal-ai/webhook/train', async (req, res) => {
 
 app.post('/fal-ai/webhook/image', async (req, res) => {
     try {
-      console.log("📩 Webhook received body:", JSON.stringify(req.body, null, 2));
-  
       // Always respond immediately to prevent retries
       res.json({ message: "Webhook received" });
   
       const { request_id, status, payload } = req.body;
   
-      if (!request_id) {
-        console.warn("⚠️ Missing request_id in payload");
-        return;
-      }
+      if (!request_id) return;
   
       if (status === "ERROR") {
         await prismaClient.outputImages.updateMany({
-          where: { 
-            falAiRequestId: request_id
-         },
-          data: { 
-            status: "Failed",
-             imageUrl: "https://img.freepik.com/free-psd/cross-mark-isolated_23-2151478803.jpg?semt=ais_hybrid&w=740&q=80"
-            }
+          where: { falAiRequestId: request_id },
+          data: { status: "Failed", imageUrl: null }
         });
         return;
       }
   
-      // Fal sends "OK" for success
       if (status === "OK" && payload?.images?.[0]?.url) {
         const imageUrl = payload.images[0].url;
   
@@ -305,16 +296,12 @@ app.post('/fal-ai/webhook/image', async (req, res) => {
             imageUrl: imageUrl
           }
         });
-  
-        console.log(`✅ Image saved for request ${request_id}: ${imageUrl}`);
-      } else {
-        console.warn(`⚠️ No usable images in payload for request: ${request_id}`);
       }
     } catch (error) {
-      console.error("❌ Error in webhook handler:", error);
       res.status(500).json({ error: "Server error" });
     }
   });
+  
   
   
 

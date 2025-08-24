@@ -5,7 +5,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
    try {
         const authHeader = req.headers["authorization"];
         const token = authHeader?.split(" ")[1];
-        console.log(authHeader)
+        
         if (!token) {
             res.status(401).json({ message: "No Token Provided"});
             return;
@@ -16,7 +16,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
         })
         
         if (decoded?.sub) {
-            console.log(decoded.sub)
+          
             req.userId = decoded?.sub;
             next();
         } else {

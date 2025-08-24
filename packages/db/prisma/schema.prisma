@@ -49,14 +49,14 @@ model Model {
 
 model OutputImages {
   id              String   @id  @default(uuid())
-  imageUrl        String   @default("")
+  imageUrl        String?  
   modelId         String
   userId          String
   prompt          String
   status          OutputImageStatusEnum  @default(Pending)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  falAiRequestId  String?
+  falAiRequestId  String?   @unique
   model           Model    @relation(fields: [modelId], references: [id])
   @@index([falAiRequestId])
 }
