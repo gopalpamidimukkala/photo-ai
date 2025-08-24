@@ -23,7 +23,7 @@ export function Camera() {
                 }
             });
             console.log("API response", response.data.imagesData);
-            setImages(response.data?.imagesData || [] );
+            setImages(response.data?.imagesData ?? []);
 
         } catch (err) {
             console.error("Error fetching images:", err);
