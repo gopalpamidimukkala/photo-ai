@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { ImageCard, ImageCardSkeleton, TImage } from "./ImageCard"
 
 type BulkResponse = {
-    imagesData?: TImage[]   // ✅ updated to match backend
+    imagesData?: TImage[]   
 }
 
 export function Camera() {
@@ -17,13 +17,14 @@ export function Camera() {
     const fetchImages = async () => {
         try {
             const token = await getToken();
-            const response = await axios.get<BulkResponse>(`${BACKEND_URL}/image/bulk`, {
+            const response = await axios.get(`${BACKEND_URL}/image/bulk`, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
             });
-            console.log("API response", response.data);
-            setImages(response.data?.imagesData || []);   // ✅ use imagesData
+            console.log("API response", response.data.imagesData);
+            setImages(response.data?.imagesData || [] );
+
         } catch (err) {
             console.error("Error fetching images:", err);
             setImages([]); // fallback to empty

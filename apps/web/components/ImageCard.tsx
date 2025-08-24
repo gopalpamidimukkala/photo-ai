@@ -9,6 +9,7 @@ export interface TImage {
 const DEFAULT_BLUR_IMAGE = "https://static.vecteezy.com/system/resources/thumbnails/016/894/217/small/white-background-white-polished-metal-abstract-white-gradient-background-blurred-white-backdrop-illustration-vector.jpg";
 
 export function ImageCard(props: TImage) {
+    console.log(props);
     return <div className="rounded-xl border-2 max-w-[400px] cursor-pointer">
         <div className="flex p-4 gap-4">
             {props.status === "Generated" ? <img src={props.imageUrl} className="rounded" /> : <img src={DEFAULT_BLUR_IMAGE} />}
