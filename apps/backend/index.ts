@@ -271,8 +271,8 @@ app.post('/fal-ai/webhook/image', async (req, res) => {
     try {
       console.log("📩 Webhook received body:", JSON.stringify(req.body, null, 2));
   
-      // Always acknowledge quickly so Fal doesn't retry
-      res.json({ message: "Webhook Received" });
+      // Always respond immediately to prevent retries
+      res.json({ message: "Webhook received" });
   
       const { request_id, status, payload } = req.body;
   
@@ -294,22 +294,28 @@ app.post('/fal-ai/webhook/image', async (req, res) => {
         return;
       }
   
-      if (status === "COMPLETED" && payload?.images?.[0]?.url) {
+      // Fal sends "OK" for success
+      if (status === "OK" && payload?.images?.[0]?.url) {
+        const imageUrl = payload.images[0].url;
+  
         await prismaClient.outputImages.updateMany({
           where: { falAiRequestId: request_id },
           data: {
             status: "Generated",
-            imageUrl: payload.images[0].url
+            imageUrl: imageUrl
           }
         });
+  
+        console.log(`✅ Image saved for request ${request_id}: ${imageUrl}`);
       } else {
-        console.warn("⚠️ No images in payload for request:", request_id);
+        console.warn(`⚠️ No usable images in payload for request: ${request_id}`);
       }
     } catch (error) {
       console.error("❌ Error in webhook handler:", error);
       res.status(500).json({ error: "Server error" });
     }
   });
+  
   
 
 
