@@ -22,8 +22,12 @@ export function Camera() {
                     "Authorization": `Bearer ${token}`
                 }
             });
-            console.log("API response", response.data.imagesData);
-            setImages(response.data?.imagesData ?? []);
+            const imagesWithStatus = response.data.imagesData.map((img: any) => ({
+                status: img.status ?? "Generated",
+                ...img
+              }));
+              console.log("response received", imagesWithStatus)
+              setImages(imagesWithStatus);
 
         } catch (err) {
             console.error("Error fetching images:", err);
