@@ -269,38 +269,48 @@ app.post('/fal-ai/webhook/train', async (req, res) => {
 
 app.post('/fal-ai/webhook/image', async (req, res) => {
     try {
-        const requestId = req.body.request_id;
-
-        if (req.body.status === "ERROR") {
-            await prismaClient.outputImages.updateMany({
-              where: { falAiRequestId: requestId },
-              data: {
-                status: "Failed",
-                imageUrl: "https://img.freepik.com/free-psd/cross-mark-isolated_23-2151478803.jpg?semt=ais_hybrid&w=740&q=80" // no image if failed
-              },
-            });
-      
-            return res.status(200).json({ message: "Webhook Received: ERROR" });
-          }
-    
+      console.log("📩 Webhook received body:", JSON.stringify(req.body, null, 2));
+  
+      // Always acknowledge quickly so Fal doesn't retry
+      res.json({ message: "Webhook Received" });
+  
+      const { request_id, status, payload } = req.body;
+  
+      if (!request_id) {
+        console.warn("⚠️ Missing request_id in payload");
+        return;
+      }
+  
+      if (status === "ERROR") {
         await prismaClient.outputImages.updateMany({
-            where: {
-                falAiRequestId: requestId
-            },
-            data: {
-                status: "Generated",
-                imageUrl: req.body.payload?.images[0]?.url
+          where: { 
+            falAiRequestId: request_id
+         },
+          data: { 
+            status: "Failed",
+             imageUrl: "https://img.freepik.com/free-psd/cross-mark-isolated_23-2151478803.jpg?semt=ais_hybrid&w=740&q=80"
             }
-        })
-        res.json({
-            message: "Webhook Received : SUCCESS"
-        })
+        });
+        return;
+      }
+  
+      if (status === "COMPLETED" && payload?.images?.[0]?.url) {
+        await prismaClient.outputImages.updateMany({
+          where: { falAiRequestId: request_id },
+          data: {
+            status: "Generated",
+            imageUrl: payload.images[0].url
+          }
+        });
+      } else {
+        console.warn("⚠️ No images in payload for request:", request_id);
+      }
     } catch (error) {
-        console.error("Error in the webhook handler:", error);
-        res.status(500).json({ error: "Failed to handle webhook" });
+      console.error("❌ Error in webhook handler:", error);
+      res.status(500).json({ error: "Server error" });
     }
-
-})
+  });
+  
 
 
 app.listen(PORT, () => {
