@@ -129,6 +129,7 @@ app.post('/ai/generate/', authMiddleware, async (req, res) => {
 app.post('/pack/generate/', authMiddleware, async (req, res) => {
     try {
         const parsedBody = GenerateImagesFromPack.safeParse(req.body);
+        console.log(parsedBody);
 
         if (!parsedBody.success ) {
             res.status(411).json({
@@ -141,14 +142,15 @@ app.post('/pack/generate/', authMiddleware, async (req, res) => {
                 packId: parsedBody.data.packId 
             }
         })
+        console.log("prompts",prompts)
 
         const model = await prismaClient.model.findFirst({
             where: {
                 id : parsedBody.data.modelId
             }
         })
-
-        if (!model || !model.tensorPath) {
+        console.log("model", model)
+        if (!model) {
             res.status(411).json({
                 message: "Model Not Found"
             })
@@ -160,13 +162,14 @@ app.post('/pack/generate/', authMiddleware, async (req, res) => {
                 falAiModel.generateImage(prompt.prompt, model.tensorPath! )
             )
         );
+        console.log(requestIds);
         const images = await prismaClient.outputImages.createManyAndReturn({
             data: prompts.map((prompt, index) => ({
                 prompt: prompt.prompt,
                 userId: req.userId!,
                 modelId: parsedBody.data.modelId,
                 imageUrl: "",
-                falAiModel: requestIds[index]?.request_id
+                falAiModel: requestIds[index]?.request_id,
             }))
         })
 
